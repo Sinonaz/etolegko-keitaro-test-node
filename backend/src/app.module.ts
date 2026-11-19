@@ -6,6 +6,7 @@ import configuration from './config/configuration';
 import { HealthModule } from './health/health.module';
 import { KeitaroModule } from './keitaro/keitaro.module';
 import { OffersModule } from './offers/offers.module';
+import { StreamsModule } from './streams/streams.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { OffersModule } from './offers/offers.module';
     KeitaroModule,
     CampaignsModule,
     OffersModule,
+    StreamsModule,
   ],
 })
 export class AppModule {}
