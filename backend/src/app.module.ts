@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { CampaignsModule } from './campaigns/campaigns.module';
 import configuration from './config/configuration';
 import { HealthModule } from './health/health.module';
 import { KeitaroModule } from './keitaro/keitaro.module';
+import { OffersModule } from './offers/offers.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { KeitaroModule } from './keitaro/keitaro.module';
     }),
     HealthModule,
     KeitaroModule,
+    CampaignsModule,
+    OffersModule,
   ],
 })
 export class AppModule {}
