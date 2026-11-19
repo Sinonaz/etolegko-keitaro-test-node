@@ -30,14 +30,24 @@ docker compose up --build
 
 Открыть UI: http://127.0.0.1:8080
 
-| Сервис     | Роль                         |
-|------------|------------------------------|
-| `db`       | MongoDB 7                    |
-| `backend`  | NestJS на порту 3000         |
-| `frontend` | nginx: UI + proxy `/api/*`   |
+Наружу опубликован только frontend (`8080`). Backend слушает `3000` внутри сети Compose; с хоста API доступен через nginx:
+
+`http://127.0.0.1:8080/api/...` → backend `/...`
+
+| Сервис     | Роль                                      |
+|------------|-------------------------------------------|
+| `db`       | MongoDB 7                                 |
+| `backend`  | NestJS на порту 3000 (внутри сети)        |
+| `frontend` | nginx: UI + proxy `/api/*` → backend      |
 
 Остановка: `docker compose down`  
 Сброс БД: `docker compose down -v`
+
+После смены `.env` пересоздайте backend:
+
+```bash
+docker compose up -d --force-recreate backend
+```
 
 Проверка связи с Keitaro:
 
@@ -45,6 +55,14 @@ docker compose up --build
 curl -s http://127.0.0.1:8080/api/keitaro/status
 # ожидается: "configured": true, "reachable": true
 ```
+
+## База данных
+
+Миграций нет: Mongoose создаёт коллекции при первом обращении  
+(`campaigns`, `stream_drafts`).
+
+Локально по умолчанию: `mongodb://localhost:27017/keitaro`  
+В Compose backend получает: `mongodb://db:27017/keitaro`
 
 ## Локальная разработка без Docker
 
@@ -59,7 +77,7 @@ docker run -d --name keitaro-mongo -p 27017:27017 mongo:7
 
 ```bash
 cd backend
-cp ../.env.example .env   # заполнить KEITARO_* и MONGODB_URI
+cp ../.env.example .env   # заполнить KEITARO_* и при необходимости MONGODB_URI
 npm install
 npm run start:dev
 ```
@@ -85,11 +103,14 @@ Vite проксирует `/api/*` → `http://127.0.0.1:3000` (префикс `
 |------------|------------|
 | `KEITARO_URL` | Origin трекера, без `/admin_api/...` |
 | `KEITARO_API_KEY` | Ключ Admin API |
-| `KEITARO_DOMAIN_ID` / `KEITARO_DOMAIN_NAME` | Домен кампании |
-| `KEITARO_GROUP_ID` / `KEITARO_GROUP_NAME` | Группа (по умолчанию `FORTESTS`) |
+| `KEITARO_DOMAIN_ID` / `KEITARO_DOMAIN_NAME` | Домен кампании (если пусто — первый активный) |
+| `KEITARO_GROUP_ID` / `KEITARO_GROUP_NAME` | Группа (по умолчанию имя `FORTESTS`) |
 | `KEITARO_SOURCE_ID` / `KEITARO_SOURCE_NAME` | Traffic source; если не найден — `0` |
 | `KEITARO_WHITE_PAGE_URL` | Редирект geo-потока (по умолчанию Google) |
-| `MONGODB_URI` | URI MongoDB |
+| `MONGODB_URI` | URI MongoDB (локально / в Docker переопределяется) |
+| `PORT` | Порт Nest (по умолчанию `3000`) |
+| `APP_NAME` | Имя приложения |
+| `DEBUG` | `true` / `false` |
 
 ## API (кратко)
 
